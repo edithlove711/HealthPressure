@@ -1,0 +1,39 @@
+name: Deploy to Google Play Store
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy APK to Google Play Store
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '2.5.0'
+
+    - name: Get packages
+      run: flutter pub get
+
+    - name: Build APK
+      run: flutter build apk
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: app-release
+        path: build/app/outputs/flutter-apk/app-release.apk
+
+    - name: Deploy to Google Play Store
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJson: ${{ secrets.GOOGLE_PLAY_API_CREDENTIALS }}
+        packageName: com.example.myapp
+        apkFiles: ./build/app/outputs/flutter-apk/app-release.apk
